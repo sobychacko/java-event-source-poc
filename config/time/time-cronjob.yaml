@@ -1,0 +1,18 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: time-event-source
+  namespace: default
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: time-event-source
+            image: gcr.io/__GCP_PROJECT__/time-event-source
+            env:
+            - name: TARGET
+              value: http://greet.default.svc.cluster.local
+          restartPolicy: OnFailure

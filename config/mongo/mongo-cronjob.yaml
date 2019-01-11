@@ -1,0 +1,32 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: mongo-event-source
+  namespace: default
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: mongo-event-source
+            image: gcr.io/__GCP_PROJECT__/mongo-event-source
+            env:
+            - name: TARGET
+              value: http://greet.default.svc.cluster.local
+            - name: MONGODB_COLLECTION
+              value: foo
+            - name: SPRING_DATA_MONGODB_HOST
+              value: __RELEASE_NAME__-mongodb.default.svc.cluster.local
+            - name: SPRING_DATA_MONGODB_PORT
+              value: "27017"
+            - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
+              value: admin
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: demo
+            - name: SPRING_DATA_MONGODB_USERNAME
+              value: demo
+            - name: SPRING_DATA_MONGODB_PASSWORD
+              value: demo
+          restartPolicy: OnFailure

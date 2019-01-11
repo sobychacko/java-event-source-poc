@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: time-event-source
+  labels:
+    app: time-event-source
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: time-event-source
+  template:
+    metadata:
+      labels:
+        app: time-event-source
+    spec:
+      containers:
+      - name: time-event-source
+        image: gcr.io/__GCP_PROJECT__/time-event-source
+        env:
+        - name: TARGET
+          value: http://greet.default.svc.cluster.local
+        - name: PERIOD
+          value: "1000"
