@@ -1,0 +1,56 @@
+## JDBC Event Source
+
+This is a standalone Spring Cloud Stream app that uses the Kafka binder.
+This app is a JDBC Event source that uses a separate jdbc-supplier library as a dependency that provides a java.util.Supplier bean.
+The application includes a trigger configuration to trigger the JDBC supplier.
+This application is bundled with a MariaDB JDBC driver.
+
+## Running the application
+
+* Go to the application root
+* `docker-compose up -d`
+
+* Open another terminal
+* Ensure that you have the `mysql` CLI tool installed and then use this command:
+`mysql -u root -p  -h 127.0.0.1 -P 3306 sample_mysql_db`
+
+pwd is the default password.
+
+`sample_mysql_db` is the name of the database created by the mysql that is running in the docker container.
+
+Do the following steps on the MySQL CLI:
+
+```
+create table test(
+       id bigint,
+       name varchar (2000),
+       tag char(1)
+     );
+
+insert into test values (1, 'Bob', NULL);
+insert into test values (1, 'Smith', NULL);
+insert into test values (1, 'Cathy', NULL);
+insert into test values (1, 'Joan', NULL);
+
+```
+
+* Go back to the other terminal (root of this standalone stream app)
+* mvn clean package -Pspring
+
+By default the application trigger every second. We will change that to 5 seconds at deployment.
+
+```
+java -jar target/jdbc-source-standalone-0.0.1-SNAPSHOT.jar --spring.datasource.url=jdbc:mariadb://localhost:3306/sample_mysql_db
+--spring.datasource.username=root --spring.datasource.password=pwd --spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+--jdbc.query="select id, name, tag from test order by id" --trigger.fixedDelay=5 --spring.cloud.stream.function.definition=jdbcSupplier
+```
+
+Watch the data appear on the application console.
+
+You can also confirm this on kafka by doing this:
+
+```
+docker exec -it kafka-jdbc-source /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic output
+```
+
+Once you are done testing, stop Kafka and mysql running in the docker container: `docker-compose down`
